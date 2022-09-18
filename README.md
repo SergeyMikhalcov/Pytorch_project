@@ -1,4 +1,4 @@
-For trainig check config.json and choose necessary model/optimazer and so on.
+For trainig check config.json and choose necessary model/optimizer and so on.
 python train.py -c config.json
 
 Use tensorboard for control learning process.
