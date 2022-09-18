@@ -1,29 +1,33 @@
 {
-    "name": "Hymenoptera_ResNet_18_pretrained",
+    "name": "Seq_LSTM",
     "n_gpu": 1,
-
     "arch": {
-        "type": "ResNet_18_pretrained",
-        "args": {}
+        "type": "LSTM_RNN",
+        "args": {
+           "dictionary_size":10, 
+           "embedding_size":10,
+           "num_hiddens":32, 
+           "num_classes":10
+        }
     },
     "data_loader": {
-        "type": "HymenopteraDataLoader",
+        "type": "SeqDataLoader",
         "args":{
-            "data_dir": "../hymenoptera_data/train",
-            "batch_size": 44,
-            "shuffle": true,
+            "batch_size": 20,
+            "shuffle": false,
             "validation_split": 0.2,
-            "num_workers": 4
+            "num_workers": 6,
+            "total_size": 50000
         }
     },
     "optimizer": {
         "type": "AdamW",
         "args":{
-            "lr": 0.0005,
+            "lr": 0.05,
             "weight_decay": 0.00001
         }
     },
-    "loss": "ce_loss",
+    "loss": "ce_loss_rnn",
     "metrics": [
         "accuracy"
     ],
@@ -35,7 +39,7 @@
         }
     },
     "trainer": {
-        "epochs": 20,
+        "epochs": 100,
 
         "save_dir": "saved/",
         "save_period": 1,

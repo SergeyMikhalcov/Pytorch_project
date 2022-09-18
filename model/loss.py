@@ -1,3 +1,4 @@
+from traceback import print_tb
 import torch.nn.functional as F
 import torch
 
@@ -6,6 +7,9 @@ def nll_loss(output, target):
 
 def mse_loss(output, target):
     return F.mse_loss(output, target)
+
+def ce_loss_rnn(output, target):    
+    return F.cross_entropy(output, target, reduction='sum')
 
 def ce_loss(output, target):
     return F.cross_entropy(output, target, reduction='mean')

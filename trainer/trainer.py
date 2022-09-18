@@ -44,8 +44,9 @@ class Trainer(BaseTrainer):
 
             self.optimizer.zero_grad()
             output = self.model(data)
-    
-            loss = self.criterion(output, target)
+
+            loss = self.criterion(output.view(-1, self.model.num_classes), 
+                                  target.view(1, -1).squeeze())
             loss.backward()
             self.optimizer.step()
 
@@ -59,8 +60,7 @@ class Trainer(BaseTrainer):
                     epoch,
                     self._progress(batch_idx),
                     loss.item()))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
-
+                
             if batch_idx == self.len_epoch:
                 break
         log = self.train_metrics.result()
@@ -87,13 +87,14 @@ class Trainer(BaseTrainer):
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
-                loss = self.criterion(output, target)
+                loss = self.criterion(output.view(-1, self.model.num_classes), 
+                                  target.view(1, -1).squeeze())
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
                 self.valid_metrics.update('loss', loss.item())
                 for met in self.metric_ftns:
-                    self.valid_metrics.update(met.__name__, met(output, target))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                    self.valid_metrics.update(met.__name__, met(output.view(-1, self.model.num_classes), 
+                                  target.view(1, -1).squeeze()))                
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():

@@ -11,14 +11,10 @@ from parse_config import ConfigParser
 def main(config):
     logger = config.get_logger('test')
 
+    print(config['data_loader']['args'])
     # setup data_loader instances
     data_loader = getattr(module_data, config['data_loader']['type'])(
-        config['data_loader']['args']['data_dir'],
-        batch_size=512,
-        shuffle=False,
-        validation_split=0.0,
-        training=False,
-        num_workers=2
+        **config['data_loader']['args']
     )
 
     # build model architecture
@@ -48,17 +44,18 @@ def main(config):
         for i, (data, target) in enumerate(tqdm(data_loader)):
             data, target = data.to(device), target.to(device)
             output = model(data)
-
-            #
-            # save sample images, or do something with output here
-            #
+            
+            print("".join([data_loader.index_to_char[index] for index in torch.argmax(output[0], dim=output[0].dim()-1)]))
+            print("".join([data_loader.index_to_char[index] for index in target[0]]))
 
             # computing loss, metrics on test set
-            loss = loss_fn(output, target)
+            loss = loss_fn(output.view(-1, model.num_classes), 
+                                  target.view(1, -1).squeeze())
             batch_size = data.shape[0]
-            total_loss += loss.item() * batch_size
+            total_loss += loss.item() / batch_size
             for i, metric in enumerate(metric_fns):
-                total_metrics[i] += metric(output, target) * batch_size
+                total_metrics[i] += metric(output.view(-1, model.num_classes), 
+                                  target.view(1, -1).squeeze()) * batch_size
 
     n_samples = len(data_loader.sampler)
     log = {'loss': total_loss / n_samples}

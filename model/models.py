@@ -93,11 +93,9 @@ class VGG16(BaseModel):
         out = self.fc(out)
         out = self.fc1(out)
         out = self.fc2(out)
-
         return F.log_softmax(out, dim=1)
     
 class Block(BaseModel):
-    
     def __init__(self, in_channels, out_channels, identity_downsample=None, stride=1):
         super(Block, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1)
@@ -141,12 +139,10 @@ class VGG16_pretrained(BaseModel):
         with torch.no_grad():
             features = self.model(images)
         labels = self.classifier_tr(features)
-        return F.log_softmax(labels)
+        return F.log_softmax(labels, dim=1) 
     
 class ResNet_18(BaseModel):
-    
     def __init__(self, image_channels=3, num_classes=2):
-        
         super(ResNet_18, self).__init__()
         self.in_channels = 64
         self.conv1 = nn.Conv2d(image_channels, 64, kernel_size=7, stride=2, padding=3)
@@ -190,7 +186,7 @@ class ResNet_18(BaseModel):
         out = out.view(out.shape[0], -1)
         out = self.fc(out)
     
-        return F.log_softmax(out)
+        return F.log_softmax(out, dim=1) 
     
     def identity_downsample(self, in_channels, out_channels):
         
@@ -216,10 +212,55 @@ class ResNet_18_pretrained(BaseModel):
             nn.Linear(4096, num_classes),                      
         )
 
-    def forward(self, x):
+    def forward(self, images):
         with torch.no_grad():
-            features = self.model(x)
-        out = self.classifier(features)
-        return F.log_softmax(out, dim=1)
+            features = self.model(images)
+        labels = self.classifier(features)
+        return F.log_softmax(labels, dim=1)
     
+class SimpleRNN(BaseModel):
+    def __init__(self, dictionary_size=95, embedding_size=190, num_hiddens=380, num_classes=95):
+        super(SimpleRNN, self).__init__()
+        self.num_classes = num_classes
+        self.embedding = torch.nn.Embedding(dictionary_size, embedding_size)
+        self.hidden = torch.nn.RNN(embedding_size, num_hiddens, batch_first=True)
+        self.output = torch.nn.Linear(num_hiddens, num_classes)
+
+    def forward(self, X):
+        out = self.embedding(X)
+        rnn_out, state = self.hidden(out)  
+        predictions = self.output(rnn_out)
+        
+        return predictions
+
+class GRU_RNN(BaseModel):
+    def __init__(self, dictionary_size, embedding_size, num_hiddens, num_classes):
+        super(GRU_RNN, self).__init__()
+        self.num_hiddens = num_hiddens
+        self.num_classes = num_classes
+        self.embedding = torch.nn.Embedding(dictionary_size, embedding_size)
+        self.hidden = torch.nn.GRU(embedding_size, num_hiddens, batch_first=True)
+        self.output = torch.nn.Linear(num_hiddens, num_classes)
+
+    def forward(self, X):
+        out = self.embedding(X)
+        rnn_out, state = self.hidden(out)  
+        predictions = self.output(rnn_out)
+        
+        return predictions
     
+class LSTM_RNN(BaseModel):
+    def __init__(self, dictionary_size, embedding_size, num_hiddens, num_classes):
+        super(LSTM_RNN, self).__init__()
+        self.num_hiddens = num_hiddens
+        self.num_classes = num_classes
+        self.embedding = torch.nn.Embedding(dictionary_size, embedding_size)
+        self.hidden = torch.nn.LSTM(embedding_size, num_hiddens, batch_first=True)
+        self.output = torch.nn.Linear(num_hiddens, num_classes)
+
+    def forward(self, X):
+        out = self.embedding(X)
+        rnn_out, state = self.hidden(out)  
+        predictions = self.output(rnn_out)
+        
+        return predictions
