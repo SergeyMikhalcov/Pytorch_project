@@ -302,11 +302,16 @@ class DecoderRNN(nn.Module):
 
 class Seq2Seq(nn.Module):
 
-     def __init__(self, encoder, decoder):
-      super(Seq2Seq, self).__init__()
+    def __init__(self, encoder, decoder):
+        super(Seq2Seq, self).__init__()
 
-      self.encoder = encoder
-      self.decoder = decoder
+        self.encoder = encoder
+        self.decoder = decoder
 
-     def forward(self, source, target, ratio = 0.5):
-        pass
+    def forward(self, input_tensor):
+        enc_hid_in = self.encoder.initHidden()
+        
+        enc_out, enc_hid = self.encoder.forward(input_tensor, enc_hid_in)
+        dec_out, dec_hid = self.decoder.forward(enc_out, enc_hid)
+        
+        return dec_out, dec_hid
