@@ -8,7 +8,7 @@
     "data_loader": {
         "type": "CaesarEngDataLoader",
         "args":{
-            "data_dir": "D:\\Downloads\\(1) The Hunger Games.txt",
+            "data_dir": "data\\(1) The Hunger Games.txt",
             "batch_size": 250,
             "shuffle": false,
             "validation_split": 0.2,
