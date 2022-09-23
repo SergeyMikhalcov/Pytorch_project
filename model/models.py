@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from base import BaseModel
 import torchvision.models as models
 import random
-s
+
 class VGG16(BaseModel):
     def __init__(self, num_classes=2):
         super(VGG16, self).__init__()
@@ -306,6 +306,9 @@ class Decoder(nn.Module):
         
         self.dropout = nn.Dropout(dropout)
         
+        for name, param in self.named_parameters():
+            nn.init.uniform_(param.data, -0.08, 0.08)
+        
     def forward(self, input, hidden, cell):
         
         # input = [batch_size]
@@ -328,49 +331,49 @@ class Decoder(nn.Module):
         # prediction = [batch_size, output_dim]
         return prediction, hidden, cell
 
-class Seq2Seq(nn.Module):
-    def __init__(self, encoder, decoder, device):
-        super().__init__()
+# class Seq2Seq(nn.Module):
+#     def __init__(self, device, encoder=Encoder(), decoder=Decoder(),):
+#         super().__init__()
         
-        self.encoder = encoder
-        self.decoder = decoder
-        self.device = device
+#         self.encoder = encoder
+#         self.decoder = decoder
+#         self.device = device
         
-        assert encoder.hid_dim == decoder.hid_dim, \
-            'hidden dimensions of encoder and decoder must be equal.'
-        assert encoder.n_layers == decoder.n_layers, \
-            'n_layers of encoder and decoder must be equal.'
+#         assert encoder.hid_dim == decoder.hid_dim, \
+#             'hidden dimensions of encoder and decoder must be equal.'
+#         assert encoder.n_layers == decoder.n_layers, \
+#             'n_layers of encoder and decoder must be equal.'
         
-    def forward(self, src, trg, teacher_forcing_ratio=0.5):
-        # src = [sen_len, batch_size]
-        # trg = [sen_len, batch_size]
-        # teacher_forcing_ratio : the probability to use the teacher forcing.
-        batch_size = trg.shape[1]
-        trg_len = trg.shape[0]
-        trg_vocab_size = self.decoder.output_dim
+#     def forward(self, src, trg, teacher_forcing_ratio=0.5):
+#         # src = [sen_len, batch_size]
+#         # trg = [sen_len, batch_size]
+#         # teacher_forcing_ratio : the probability to use the teacher forcing.
+#         batch_size = trg.shape[1]
+#         trg_len = trg.shape[0]
+#         trg_vocab_size = self.decoder.output_dim
         
-        # tensor to store decoder outputs
-        outputs = torch.zeros(trg_len, batch_size, trg_vocab_size).to(self.device)
+#         # tensor to store decoder outputs
+#         outputs = torch.zeros(trg_len, batch_size, trg_vocab_size).to(self.device)
         
-        # last hidden state of the encoder is used as the initial hidden state of the decoder
-        hidden, cell = self.encoder(src)
+#         # last hidden state of the encoder is used as the initial hidden state of the decoder
+#         hidden, cell = self.encoder(src)
         
-        # first input to the decoder is the <sos> token.
-        input = trg[0, :]
-        for t in range(1, trg_len):
-            # insert input token embedding, previous hidden and previous cell states 
-            # receive output tensor (predictions) and new hidden and cell states.
-            output, hidden, cell = self.decoder(input, hidden, cell)
+#         # first input to the decoder is the <sos> token.
+#         input = trg[0, :]
+#         for t in range(1, trg_len):
+#             # insert input token embedding, previous hidden and previous cell states 
+#             # receive output tensor (predictions) and new hidden and cell states.
+#             output, hidden, cell = self.decoder(input, hidden, cell)
             
-            # replace predictions in a tensor holding predictions for each token
-            outputs[t] = output
+#             # replace predictions in a tensor holding predictions for each token
+#             outputs[t] = output
             
-            # decide if we are going to use teacher forcing or not.
-            teacher_force = random.random() < teacher_forcing_ratio
+#             # decide if we are going to use teacher forcing or not.
+#             teacher_force = random.random() < teacher_forcing_ratio
             
-            # get the highest predicted token from our predictions.
-            top1 = output.argmax(1)
-            # update input : use ground_truth when teacher_force 
-            input = trg[t] if teacher_force else top1
+#             # get the highest predicted token from our predictions.
+#             top1 = output.argmax(1)
+#             # update input : use ground_truth when teacher_force 
+#             input = trg[t] if teacher_force else top1
             
-        return outputs
+#         return outputs

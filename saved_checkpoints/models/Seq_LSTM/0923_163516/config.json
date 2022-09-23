@@ -1,0 +1,50 @@
+{
+    "name": "Seq_LSTM",
+    "n_gpu": 1,
+    "arch": {
+        "type": "LSTM_RNN",
+        "args": {
+            "dictionary_size": 10,
+            "embedding_size": 10,
+            "num_hiddens": 32,
+            "num_classes": 10
+        }
+    },
+    "data_loader": {
+        "type": "SeqDataLoader",
+        "args": {
+            "batch_size": 20,
+            "shuffle": false,
+            "validation_split": 0.2,
+            "num_workers": 6,
+            "total_size": 100
+        }
+    },
+    "optimizer": {
+        "type": "AdamW",
+        "args": {
+            "lr": 0.05,
+            "weight_decay": 1e-05
+        }
+    },
+    "loss": "ce_loss_rnn",
+    "metrics": [
+        "accuracy"
+    ],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 5,
+            "gamma": 0.8
+        }
+    },
+    "trainer": {
+        "epochs": 100,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 20,
+        "tensorboard": true
+    }
+}

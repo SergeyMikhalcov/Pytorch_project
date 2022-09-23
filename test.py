@@ -45,8 +45,8 @@ def main(config):
             data, target = data.to(device), target.to(device)
             output = model(data)
             
-            print("".join([data_loader.index_to_char[index] for index in torch.argmax(output[0], dim=output[0].dim()-1)]))
-            print("".join([data_loader.index_to_char[index] for index in target[0]]))
+            print("\npredict - ", "".join([str(data_loader.index_to_char[index.item()]) for index in torch.argmax(output[0], dim=output[0].dim()-1)]))
+            print("target  - ", "".join([str(data_loader.index_to_char[index.item()]) for index in target[0]]))
 
             # computing loss, metrics on test set
             loss = loss_fn(output.view(-1, model.num_classes), 

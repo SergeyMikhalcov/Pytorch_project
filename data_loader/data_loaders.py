@@ -9,7 +9,6 @@ import torch
 from base.base_dataset import BaseDataSet
 
 class HymenopteraDataLoader(BaseDataLoader):
-    
     """
     Hymenoptera data loading demo using BaseDataLoader
     """
@@ -150,6 +149,59 @@ class SeqDataLoader(BaseDataLoader):
                  training = True, total_size = 100):
         self.max_len = max_len
         self.dataset = SeqDataSet(max_len, total_size)
+        self.index_to_char = {c: str(i) for i, c in enumerate(range(10))}
         
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)
+         
+    
+
+# Создадим объект словаря нашего языка, который будет хранить данные по маппингу слов - index2word и обратно word2index и плюс второстепенные методы по добавлению токена и обработке предложений:
+class LanguageVocabulary(object):
+    def __init__(self, name):
+        # название языка
+        self.name = name
+        # словарик word2index который хранит соответственно кодировку слова в целочисленный индекс словаря
+        self.word2index = {}
+        # обычный словарик который хранит распределение слов, сколько слов мы использовали и сколько обнаружили
+        self.word2count = {}
+        # Обратный словарик словарю word2index где хранятся уже индексы и замаппенные слова к каждому индексу, нужен будет для расшифровки последовательности
+        self.index2word = {0: "SOS", 1: "EOS"}
+        # Count SOS and EOS, храним просто общее количество слов в нашем словаре, то есть количество токенов в сформированном словарике нашего языка
+        self.n_words = 2
+
+    def add_sentence(self, sentence):
+        """
+        Метод класса, для добавления предложения в словарь.
+        Каждое предложение поступающее к нам, будет разбираться на
+        примитивные токены и добавляться в словарь при помощи метода класса addword()
+        """
+        for word in sentence.split(' '):
+            self.add_word(word)
+
+
+    def add_word(self, word):
+        # проверяем не входит ли наше слово в словарь word2index
+        if word not in self.word2index:
+            # добавляем в качестве ключа слово а в качестве значения последнее n_words
+            self.word2index[word] = self.n_words
+            # меняем на единичку
+            self.word2count[word] = 1
+            # и соответственно меняем и index2word словарик добавляя уже слово для декодирования
+            self.index2word[self.n_words] = word
+            # инкрементируем n_words
+            self.n_words += 1
+        else:
+            # Если такое уже слово есть просто добавляем 1 что добавилось одно слово
+            self.word2count[word] += 1
+        
+class EngFraDataset(BaseDataSet):
+    def __init__(self, max_len=50, total_size=100) -> None:
+        self.total_size = total_size
+        self.generator = SeqGen(max_len)
+        
+    def __getitem__(self, *inputs):        
+        return self.generator.generate_x_y()
+    
+    def __len__(self):
+        return self.total_size
 
