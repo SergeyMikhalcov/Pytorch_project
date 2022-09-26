@@ -11,11 +11,11 @@ a)
        python train.py -c config_rnn_caesar.json
 
     2) Caesar validation/inference: 
-       python test.py -c saved_checkpoints\models\RNN_Caesar\0923_152755\config.json -r saved\models\RNN_Caesar\0923_152755\model_best.pth
+       python test.py -c saved_checkpoints\models\RNN_Caesar\0923_152755\config.json -r saved_checkpoints\models\RNN_Caesar\0923_152755\model_best.pth
 
 b) 
     1) Sequence training:
         python train.py -c config_for_seq.json
 
     2) Sequence validation/inference:
-        python test.py -c saved_checkpoints\models\Seq_LSTM\0923_154333\config.json -r saved\models\Seq_LSTM\0923_154333\model_best.pth
+        python test.py -c saved_checkpoints\models\Seq_LSTM\0923_154333\config.json -r saved_checkpoints\models\Seq_LSTM\0923_154333\model_best.pth
